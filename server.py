@@ -167,8 +167,6 @@ def rank():
     total = 0
     for item in result:
         total += 1
-        print(total)
-        print(item["log_probs"])
         output_q.put(item["log_probs"])
 
 
@@ -210,6 +208,7 @@ if __name__ == '__main__':
         size += padding
         input_q.put((query, candidates))
         print('output q:')
+        print(size)
         results = [output_q.get() for _ in range(size)][:-padding]
         log_probs = zip(*results)
         log_probs = np.stack(log_probs).reshape(-1, 2)
