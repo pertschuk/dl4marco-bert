@@ -209,7 +209,7 @@ if __name__ == '__main__':
         input_q.put((query, candidates))
         print('output q:')
         results = [output_q.get() for _ in range(size)][:len(candidates)]
-        log_probs = zip(*results)
+        log_probs = list(zip(*results))
         import pdb
         pdb.set_trace()
         log_probs = np.stack(log_probs).reshape(-1, 2)
