@@ -212,12 +212,13 @@ if __name__ == '__main__':
             print(len(dev_set[qid]))
             print(size)
         input_q.put((query, candidates))
-        print('output q:')
-        print(size)
-        print(len(candidates))
         results = [output_q.get() for _ in range(size)][:-padding]
         log_probs = list(zip(*results))
-        print(log_probs)
+        try:
+            assert len(log_probs) == len(candidates)
+        except:
+            import pdb
+            pdb.set_trace()
         log_probs = np.stack(log_probs).reshape(-1, 2)
 
         scores = log_probs[:, 1]
