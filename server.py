@@ -67,30 +67,12 @@ def model_fn_builder(bert_config, num_labels, init_checkpoint, learning_rate,
       tf.logging.info("  name = %s, shape = %s%s", var.name, var.shape,
                       init_string)
 
-    output_spec = None
-    if mode == tf.estimator.ModeKeys.TRAIN:
-
-      train_op = optimization.create_optimizer(
-          total_loss, learning_rate, num_train_steps, num_warmup_steps, use_tpu)
-
-      output_spec = tf.contrib.tpu.TPUEstimatorSpec(
-          mode=mode,
-          loss=total_loss,
-          train_op=train_op,
-          scaffold_fn=scaffold_fn)
-
-    elif mode == tf.estimator.ModeKeys.PREDICT:
-      output_spec = tf.contrib.tpu.TPUEstimatorSpec(
-          mode=mode,
-          predictions={
-              "log_probs": log_probs,
-              "label_ids": label_ids,
-          },
-          scaffold_fn=scaffold_fn)
-
-    else:
-      raise ValueError(
-          "Only TRAIN and PREDICT modes are supported: %s" % (mode))
+    output_spec = tf.estimator.EstimatorSpec(
+      mode=mode,
+      predictions={
+          "log_probs": log_probs,
+          "label_ids": label_ids,
+      })
 
     return output_spec
 
