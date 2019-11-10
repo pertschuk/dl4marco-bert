@@ -183,7 +183,7 @@ def rank(query, candidates):
                 "segment_ids": tf.int32,
                 "input_mask": tf.int32,
             }
-        dataset = tf.data.Dataset.from_generator(feature_generator)
+        dataset = tf.data.Dataset.from_generator(feature_generator, output_types)
         dataset = dataset.padded_batch(
             batch_size=batch_size,
             padded_shapes={
