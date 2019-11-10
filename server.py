@@ -197,6 +197,7 @@ if __name__ == '__main__':
     rank_thread.start()
 
     total_mrr = 0
+    start = time.time()
     for i, qid in enumerate(dev_set.keys()):
         query = dev_queries[qid]
         candidates = dev_set[qid]
@@ -220,5 +221,5 @@ if __name__ == '__main__':
         pred_docs = scores.argsort()[::-1]
         relevant = np.array(dev_labels[qid]) * np.array(scores) * np.arange(1, len(scores)+1)
         total_mrr += sum(relevant) / size
-        print('Avg MRR: %s' % (total_mrr / (i+1)))
+        print('Avg MRR: %s' % (total_mrr / (i+1)), 'Avg time %s' % ((time.time() - start)/i))
 
