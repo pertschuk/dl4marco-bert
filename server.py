@@ -217,7 +217,8 @@ if __name__ == '__main__':
         results = [output_q.get() for _ in range(size)][:-padding]
         log_probs = list(zip(*results))
         try:
-            assert len(log_probs) == len(candidates)
+            assert len(log_probs[0]) == size - padding
+            assert len(log_probs[0]) == len(log_probs[1])
         except:
             import pdb
             pdb.set_trace()
