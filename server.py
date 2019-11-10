@@ -205,6 +205,7 @@ if __name__ == '__main__':
         input_q.put((query, candidates))
         size = len(candidates)
         print('output q:')
+        print(size)
         results = [output_q.get() for _ in range(size)]
         log_probs = zip(*results)
         log_probs = np.stack(log_probs).reshape(-1, 2)
