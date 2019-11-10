@@ -11,6 +11,7 @@ from collections import defaultdict
 
 MAX_SEQ_LENGTH = 64
 num_labels = 2
+BATCH_SIZE = 4
 VOCAB_FILE = 'bert_marco/vocab.txt'
 bert_config_file = 'bert_marco/bert_config.json'
 init_checkpoint = 'bert_marco/bert_model.ckpt'
@@ -92,7 +93,7 @@ def create_model(bert_config, is_training, input_ids, input_mask, segment_ids,
 
 
 def rank():
-    batch_size = 4
+    batch_size = BATCH_SIZE
     def input_fn():
         output_types = {
                 "input_ids": tf.int32,
@@ -203,11 +204,13 @@ if __name__ == '__main__':
     for i, qid in enumerate(dev_set.keys()):
         query = dev_queries[qid]
         candidates = dev_set[qid]
-        input_q.put((query, candidates))
         size = len(candidates)
+        padding = size % BATCH_SIZE
+        candidates += [''] * padding
+        size += padding
+        input_q.put((query, candidates))
         print('output q:')
-        print(size)
-        results = [output_q.get() for _ in range(size)]
+        results = [output_q.get() for _ in range(size)][:-padding]
         log_probs = zip(*results)
         log_probs = np.stack(log_probs).reshape(-1, 2)
 
