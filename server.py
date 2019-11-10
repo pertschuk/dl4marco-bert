@@ -244,8 +244,7 @@ def rank(query, candidates):
 
     estimator = tf.estimator.Estimator(
         model_fn=model_fn,
-        config=run_config,
-        predict_batch_size=batch_size)
+        config=run_config)
 
 
     result = estimator.predict(input_fn=input_fn,
