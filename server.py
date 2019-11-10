@@ -203,6 +203,7 @@ if __name__ == '__main__':
         candidates = dev_set[qid]
         true_size = len(candidates)
         size = len(candidates)
+        print('size %s' % size)
 
         padding = (BATCH_SIZE - (size % BATCH_SIZE)) % BATCH_SIZE
         candidates += [''] * padding
