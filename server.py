@@ -137,7 +137,7 @@ def feature_generator():
 
 
 def create_model(bert_config, is_training, input_ids, input_mask, segment_ids,
-                 labels, num_labels, use_one_hot_embeddings):
+                 num_labels, use_one_hot_embeddings):
   """Creates a classification model."""
   model = modeling.BertModel(
       config=bert_config,
@@ -166,12 +166,7 @@ def create_model(bert_config, is_training, input_ids, input_mask, segment_ids,
     logits = tf.nn.bias_add(logits, output_bias)
     log_probs = tf.nn.log_softmax(logits, axis=-1)
 
-    one_hot_labels = tf.one_hot(labels, depth=num_labels, dtype=tf.float32)
-
-    per_example_loss = -tf.reduce_sum(one_hot_labels * log_probs, axis=-1)
-    loss = tf.reduce_mean(per_example_loss)
-
-    return (loss, per_example_loss, log_probs)
+    return (None, None, log_probs)
 
 
 def rank(query, candidates):
@@ -209,13 +204,12 @@ def rank(query, candidates):
         input_ids = features["input_ids"]
         input_mask = features["input_mask"]
         segment_ids = features["segment_ids"]
-        label_ids = features["label_ids"]
 
         bert_config = modeling.BertConfig.from_json_file(bert_config_file)
 
         is_training = (mode == tf.estimator.ModeKeys.TRAIN)
         (total_loss, per_example_loss, log_probs) = create_model(
-            bert_config, is_training, input_ids, input_mask, segment_ids, label_ids,
+            bert_config, is_training, input_ids, input_mask, segment_ids,
             num_labels, False)
 
         tvars = tf.trainable_variables()
@@ -238,8 +232,7 @@ def rank(query, candidates):
         output_spec = tf.contrib.tpu.TPUEstimatorSpec(
             mode=mode,
             predictions={
-                "log_probs": log_probs,
-                "label_ids": label_ids,
+                "log_probs": log_probs
             },
             scaffold_fn=scaffold_fn)
 
@@ -257,16 +250,16 @@ def rank(query, candidates):
     example_idx = 0
     total_count = 0
     for item in result:
-        results.append((item["log_probs"], item["label_ids"]))
+        results.append((item["log_probs"]))
         tf.logging.info("Read {} examples in {} secs".format(
             total_count, int(time.time() - start_time)))
 
-        log_probs, labels = zip(*results)
+        log_probs = zip(*results)
         log_probs = np.stack(log_probs).reshape(-1, 2)
-        labels = np.stack(labels)
 
         scores = log_probs[:, 1]
         pred_docs = scores.argsort()[::-1]
+        print(pred_docs)
 
 if __name__ == '__main__':
     res = rank('This is a test', ['Test candidate'] * 100)
