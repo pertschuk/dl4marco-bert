@@ -166,6 +166,7 @@ def rank():
     for item in result:
         total += 1
         print(total)
+        print(item["log_probs"])
         output_q.put(item["log_probs"])
 
 
