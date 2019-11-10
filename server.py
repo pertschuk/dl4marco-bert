@@ -203,6 +203,8 @@ if __name__ == '__main__':
         query = dev_queries[qid]
         candidates = dev_set[qid]
         size = len(candidates)
+        import pdb
+        pdb.set_trace()
         padding = size % BATCH_SIZE
         candidates += [''] * padding
         size += padding
