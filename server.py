@@ -177,6 +177,7 @@ def rank():
 
         scores = log_probs[:, 1]
         pred_docs = scores.argsort()[::-1]
+        print(pred_docs)
         output_q.put(pred_docs)
 
 
@@ -204,6 +205,7 @@ if __name__ == '__main__':
                 if i > 1000000: break
                 print(i)
 
+    input_q.put(('test query', ['test cnadidate']*1000))
     rank_thread = Thread(target=rank)
     rank_thread.start()
 
