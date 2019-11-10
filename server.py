@@ -54,6 +54,7 @@ def feature_generator():
                 "segment_ids": segment_ids,
                 "input_mask": input_mask,
             }
+            print("yielded feature %s" % i)
             yield features
 
 
@@ -206,7 +207,7 @@ if __name__ == '__main__':
         size = len(candidates)
         print('output q:')
         print(size)
-        results = [output_q.get() for _ in range(size-1)]
+        results = [output_q.get() for _ in range(size)]
         log_probs = zip(*results)
         log_probs = np.stack(log_probs).reshape(-1, 2)
 
