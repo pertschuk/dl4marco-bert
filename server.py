@@ -190,13 +190,11 @@ def rank(query, candidates):
                 "input_ids": [MAX_SEQ_LENGTH],
                 "segment_ids": [MAX_SEQ_LENGTH],
                 "input_mask": [MAX_SEQ_LENGTH],
-                "label_ids": [],
             },
             padding_values={
                 "input_ids": 0,
                 "segment_ids": 0,
-                "input_mask": 0,
-                "label_ids": 0,
+                "input_mask": 0
             },
             drop_remainder=True)
         return dataset
