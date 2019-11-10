@@ -206,7 +206,7 @@ if __name__ == '__main__':
         size = len(candidates)
         print('output q:')
         print(size)
-        results = [output_q.get() for _ in range(size)]
+        results = [output_q.get() for _ in range(size-1)]
         log_probs = zip(*results)
         log_probs = np.stack(log_probs).reshape(-1, 2)
 
