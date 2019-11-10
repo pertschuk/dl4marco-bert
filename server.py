@@ -91,7 +91,7 @@ def create_model(bert_config, is_training, input_ids, input_mask, segment_ids,
 
 
 def rank():
-    batch_size = 16
+    batch_size = 4
     def input_fn():
         output_types = {
                 "input_ids": tf.int32,
