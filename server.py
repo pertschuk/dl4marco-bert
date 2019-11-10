@@ -201,6 +201,7 @@ if __name__ == '__main__':
             dev_labels[qid].append(1 if (qid, cid) in qrels else 0)
             i += 1
             if i % 10000 == 0:
+                if i > 1000000: break
                 print(i)
 
     rank_thread = Thread(target=rank)
