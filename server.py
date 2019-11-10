@@ -194,10 +194,14 @@ if __name__ == '__main__':
 
     with open(data_dir + 'top1000.dev') as fn:
         reader = csv.reader(fn, delimiter='\t')
+        i = 0
         for qid, cid, query, passage in reader:
             dev_set[qid].append(passage)
             dev_queries[qid] = query
             dev_labels[qid].append(1 if (qid, cid) in qrels else 0)
+            i += 1
+            if i % 10000 == 0:
+                print(i)
 
     rank_thread = Thread(target=rank)
     rank_thread.start()
