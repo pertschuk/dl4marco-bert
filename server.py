@@ -9,7 +9,7 @@ import csv
 from threading import Thread
 from collections import defaultdict
 
-MAX_SEQ_LENGTH = 64
+MAX_SEQ_LENGTH = 512
 num_labels = 2
 BATCH_SIZE = 4
 VOCAB_FILE = 'bert_marco/vocab.txt'
@@ -172,6 +172,8 @@ def rank():
 if __name__ == '__main__':
     data_dir ='data/'
     qrels = set()
+    rank_thread = Thread(target=rank)
+    rank_thread.start()
     with open(data_dir + 'qrels.dev.small.tsv') as fn:
         reader = csv.reader(fn, delimiter='\t')
         for qid, _, cid, _ in reader:
@@ -193,8 +195,6 @@ if __name__ == '__main__':
                 print(i)
 
     # input_q.put(('test query', ['test cnadidate']*1000))
-    rank_thread = Thread(target=rank)
-    rank_thread.start()
 
     total_mrr = 0
     start = time.time()
