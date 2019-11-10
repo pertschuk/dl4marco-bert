@@ -178,6 +178,11 @@ def rank(query, candidates):
     q.put((query, candidates))
     batch_size = 16
     def input_fn():
+        output_types = {
+                "input_ids": tf.int32,
+                "segment_ids": tf.int32,
+                "input_mask": tf.int32,
+            }
         dataset = tf.data.Dataset.from_generator(feature_generator)
         dataset = dataset.padded_batch(
             batch_size=batch_size,
