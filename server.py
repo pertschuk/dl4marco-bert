@@ -208,6 +208,7 @@ if __name__ == '__main__':
         size += padding
         input_q.put((query, candidates))
         print('output q:')
+        print(size)
         results = [output_q.get() for _ in range(size)][:len(candidates)]
         log_probs = list(zip(*results))
         import pdb
