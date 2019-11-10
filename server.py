@@ -212,7 +212,8 @@ if __name__ == '__main__':
             print(padding)
             print(len(dev_set[qid]))
             print(size)
-            raise NotImplementedError
+            import pdb
+            pdb.set_trace()
         input_q.put((query, candidates))
         results = [output_q.get() for _ in range(size)][:-padding]
         log_probs = list(zip(*results))
