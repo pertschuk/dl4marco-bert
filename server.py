@@ -160,28 +160,13 @@ def rank():
         model_fn=model_fn,
         config=run_config)
 
-
     result = estimator.predict(input_fn=input_fn,
                                yield_single_examples=True)
-    start_time = time.time()
-    results = []
-    example_idx = 0
-    total_count = 0
+    total = 0
     for item in result:
-        results.append((item["log_probs"]))
-        import pdb
-        pdb.set_trace()
-        tf.logging.info("Read {} examples in {} secs".format(
-            total_count, int(time.time() - start_time)))
-
-        log_probs = zip(*results)
-        log_probs = np.stack(log_probs).reshape(-1, 2)
-
-        scores = log_probs[:, 1]
-        pred_docs = scores.argsort()[::-1]
-        print('pred_docs')
-        print(pred_docs)
-        output_q.put(pred_docs)
+        total += 1
+        print(total)
+        output_q.put(item["log_probs"])
 
 
 if __name__ == '__main__':
@@ -219,8 +204,13 @@ if __name__ == '__main__':
         input_q.put((query, candidates))
         size = len(candidates)
         print('output q:')
-        print(output_q.get())
-        # scores = [output_q.get() for _ in range(size)]
+        results = [output_q.get() for _ in range(size)]
+        log_probs = zip(*results)
+        log_probs = np.stack(log_probs).reshape(-1, 2)
+
+        scores = log_probs[:, 1]
+        pred_docs = scores.argsort()[::-1]
+
         relevant = np.array(dev_labels[qid]) * np.array(scores) * np.arange(1, size+1)
         total_mrr += sum(relevant) / size
         print('Avg MRR: %s' % (total_mrr / (i+1)))
