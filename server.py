@@ -221,5 +221,7 @@ if __name__ == '__main__':
         pred_docs = scores.argsort()[::-1]
         relevant = np.array(dev_labels[qid]) * np.array(pred_docs) * np.arange(1, len(scores)+1)
         total_mrr += sum(np.reciprocal(relevant)) / size
+        import pdb
+        pdb.set_trace()
         print('Avg MRR: %s' % (total_mrr / (i+1)), 'Avg time %s' % ((time.time() - start)/(i+1)))
 
