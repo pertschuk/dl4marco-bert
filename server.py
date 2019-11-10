@@ -228,7 +228,7 @@ if __name__ == '__main__':
         scores = log_probs[:, 1]
         pred_docs = scores.argsort()[::-1]
 
-        relevant = np.array(dev_labels[qid]) * np.array(scores) * np.arange(1, size+1)
+        relevant = np.array(dev_labels[qid]) * np.array(scores) * np.arange(1, size)
         total_mrr += sum(relevant) / size
         print('Avg MRR: %s' % (total_mrr / (i+1)))
 
