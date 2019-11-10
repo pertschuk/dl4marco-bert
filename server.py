@@ -9,7 +9,7 @@ import csv
 from threading import Thread
 from collections import defaultdict
 
-MAX_SEQ_LENGTH = 256
+MAX_SEQ_LENGTH = 128
 num_labels = 2
 BATCH_SIZE = 4
 VOCAB_FILE = 'bert_marco/vocab.txt'
