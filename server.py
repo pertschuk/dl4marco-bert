@@ -8,9 +8,9 @@ import numpy as np
 
 MAX_SEQ_LENGTH = 64
 num_labels = 2
-VOCAB_FILE = './data/uncased_L-24_H-1024_A-16/vocab.txt'
-bert_config_file = './data/uncased_L-24_H-1024_A-16/bert_config.json'
-init_checkpoint = 'BERT_Base_trained_on_MSMARCO/model.ckpt-100000'
+VOCAB_FILE = 'bert_marco/vocab.txt'
+bert_config_file = 'bert_marco/bert_config.json'
+init_checkpoint = 'bert_marco/bert_model.ckpt'
 
 q = queue.Queue()
 
