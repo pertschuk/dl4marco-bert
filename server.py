@@ -28,9 +28,6 @@ def feature_generator():
             text=query, max_seq_length=MAX_SEQ_LENGTH, tokenizer=tokenizer,
             add_cls=True)
 
-        query_token_ids_tf = tf.train.Feature(
-            int64_list=tf.train.Int64List(value=query_token_ids))
-
         for i, doc_text in enumerate(candidates):
             doc_token_id = tokenization.convert_to_bert_input(
                 text=tokenization.convert_to_unicode(doc_text),
@@ -38,11 +35,8 @@ def feature_generator():
                 tokenizer=tokenizer,
                 add_cls=False)
 
-            doc_ids_tf = tf.train.Feature(
-                int64_list=tf.train.Int64List(value=doc_token_id))
-
-            query_ids = tf.cast(query_token_ids_tf, tf.int32)
-            doc_ids = tf.cast(doc_ids_tf, tf.int32)
+            query_ids = tf.cast(query_token_ids, tf.int32)
+            doc_ids = tf.cast(doc_token_id, tf.int32)
             input_ids = tf.concat((query_ids, doc_ids), 0)
 
             query_segment_id = tf.zeros_like(query_ids)
