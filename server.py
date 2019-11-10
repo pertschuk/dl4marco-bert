@@ -208,9 +208,10 @@ if __name__ == '__main__':
         size += padding
         input_q.put((query, candidates))
         print('output q:')
-        print(size)
         results = [output_q.get() for _ in range(size)][:-padding]
         log_probs = zip(*results)
+        import pdb
+        pdb.set_trace()
         log_probs = np.stack(log_probs).reshape(-1, 2)
 
         scores = log_probs[:, 1]
