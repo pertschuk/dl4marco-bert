@@ -209,8 +209,10 @@ if __name__ == '__main__':
         try:
             assert len(candidates) % BATCH_SIZE == 0
         except:
+            print(padding)
             print(len(dev_set[qid]))
             print(size)
+            raise NotImplementedError
         input_q.put((query, candidates))
         results = [output_q.get() for _ in range(size)][:-padding]
         log_probs = list(zip(*results))
