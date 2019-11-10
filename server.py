@@ -35,15 +35,15 @@ def feature_generator():
                 tokenizer=tokenizer,
                 add_cls=False)
 
-            query_ids = tf.cast(query_token_ids, tf.int32)
-            doc_ids = tf.cast(doc_token_id, tf.int32)
-            input_ids = tf.concat((query_ids, doc_ids), 0)
+            query_ids = query_token_ids
+            doc_ids = doc_token_id
+            input_ids = query_ids + doc_ids
 
-            query_segment_id = tf.zeros_like(query_ids)
-            doc_segment_id = tf.ones_like(doc_ids)
-            segment_ids = tf.concat((query_segment_id, doc_segment_id), 0)
+            query_segment_id = [0] * len(query_ids)
+            doc_segment_id = [1] * len(doc_ids)
+            segment_ids = query_segment_id + doc_segment_id
 
-            input_mask = tf.ones_like(input_ids)
+            input_mask = [1] * len(input_ids)
 
             features = {
                 "input_ids": input_ids,
@@ -95,12 +95,7 @@ def rank(query, candidates):
                 "segment_ids": tf.int32,
                 "input_mask": tf.int32,
             }
-        dataset = tf.data.Dataset.from_generator(feature_generator, output_types,
-                                                 output_shapes={
-                                                     'input_ids': (None,),
-                                                     'input_mask': (None,),
-                                                     'segment_ids': (None,)
-                                                 } )
+        dataset = tf.data.Dataset.from_generator(feature_generator, output_types)
         dataset = dataset.padded_batch(
             batch_size=batch_size,
             padded_shapes={
