@@ -70,8 +70,7 @@ def model_fn_builder(bert_config, num_labels, init_checkpoint, learning_rate,
     output_spec = tf.estimator.EstimatorSpec(
       mode=mode,
       predictions={
-          "log_probs": log_probs,
-          "label_ids": label_ids,
+          "log_probs": log_probs
       })
 
     return output_spec
