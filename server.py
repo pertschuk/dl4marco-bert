@@ -209,7 +209,8 @@ if __name__ == '__main__':
         input_q.put((query, candidates))
         print('output q:')
         print(size)
-        results = [output_q.get() for _ in range(size)][:len(candidates)]
+        print(len(candidates))
+        results = [output_q.get() for _ in range(size)][:-padding]
         log_probs = list(zip(*results))
         import pdb
         pdb.set_trace()
