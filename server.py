@@ -229,7 +229,7 @@ if __name__ == '__main__':
         pred_docs = scores.argsort()[::-1]
 
         try:
-            relevant = np.array(dev_labels[qid]) * np.array(scores) * np.arange(1, size)
+            relevant = np.array(dev_labels[qid]) * np.array(scores) * np.arange(1, size-1)
         except:
             import pdb
             pdb.set_trace()
