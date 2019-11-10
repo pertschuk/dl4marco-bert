@@ -202,6 +202,7 @@ if __name__ == '__main__':
     for i, qid in enumerate(dev_set.keys()):
         query = dev_queries[qid]
         candidates = dev_set[qid]
+        true_size = len(candidates)
         size = len(candidates)
         padding = (BATCH_SIZE - (size % BATCH_SIZE)) % BATCH_SIZE
         candidates += [''] * padding
@@ -215,7 +216,7 @@ if __name__ == '__main__':
             import pdb
             pdb.set_trace()
         input_q.put((query, candidates))
-        results = [output_q.get() for _ in range(size)][:-padding]
+        results = [output_q.get() for _ in range(size)][:true_size]
         log_probs = list(zip(*results))
         try:
             assert len(log_probs[0]) == size - padding
