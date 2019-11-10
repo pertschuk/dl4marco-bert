@@ -5,6 +5,9 @@ import modeling
 import queue
 import time
 import numpy as np
+import csv
+from threading import Thread
+from collections import defaultdict
 
 MAX_SEQ_LENGTH = 64
 num_labels = 2
@@ -12,7 +15,8 @@ VOCAB_FILE = 'bert_marco/vocab.txt'
 bert_config_file = 'bert_marco/bert_config.json'
 init_checkpoint = 'bert_marco/bert_model.ckpt'
 
-q = queue.Queue()
+input_q = queue.Queue()
+output_q = queue.Queue()
 
 tokenizer = tokenization.FullTokenizer(
       vocab_file=VOCAB_FILE, do_lower_case=True)
@@ -22,7 +26,7 @@ run_config = tf.estimator.RunConfig()
 
 def feature_generator():
     while True:
-        query, candidates = q.get()
+        query, candidates = input_q.get()
         query = tokenization.convert_to_unicode(query)
         query_token_ids = tokenization.convert_to_bert_input(
             text=query, max_seq_length=MAX_SEQ_LENGTH, tokenizer=tokenizer,
@@ -86,8 +90,7 @@ def create_model(bert_config, is_training, input_ids, input_mask, segment_ids,
     return (None, None, log_probs)
 
 
-def rank(query, candidates):
-    q.put((query, candidates))
+def rank():
     batch_size = 16
     def input_fn():
         output_types = {
@@ -174,7 +177,39 @@ def rank(query, candidates):
 
         scores = log_probs[:, 1]
         pred_docs = scores.argsort()[::-1]
-        print(pred_docs)
+        output_q.put(pred_docs)
+
 
 if __name__ == '__main__':
-    res = rank('This is a test', ['Test candidate'] * 100)
+    data_dir ='data/'
+    qrels = set()
+    with open(data_dir + 'qrels.dev.small.tsv') as fn:
+        reader = csv.reader(fn, delimiter='\t')
+        for qid, _, cid, _ in reader:
+            qrels.add((qid, cid))
+
+    dev_set = defaultdict(list)
+    dev_queries = dict()
+    dev_labels = defaultdict(list)
+
+    with open(data_dir + 'top1000.dev') as fn:
+        reader = csv.reader(fn, delimiter='\t')
+        for qid, cid, query, passage in reader:
+            dev_set[qid].append(passage)
+            dev_queries[qid] = query
+            dev_labels[qid].append(1 if (qid, cid) in qrels else 0)
+
+    rank_thread = Thread(target=rank)
+    rank_thread.start()
+
+    total_mrr = 0
+    for i, qid in enumerate(dev_set.keys()):
+        query = dev_queries[qid]
+        candidates = dev_set[qid]
+        input_q.put((query, candidates))
+        size = len(candidates)
+        scores = [output_q.get() for _ in range(size)]
+        relevant = np.array(dev_labels[qid]) * np.array(scores) * np.arange(1, size+1)
+        total_mrr += sum(relevant) / size
+        print('Avg MRR: %s' % (total_mrr / (i+1)))
+
