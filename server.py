@@ -55,7 +55,6 @@ def feature_generator():
                 "segment_ids": segment_ids,
                 "input_mask": input_mask,
             }
-            print("yielded feature %s" % i)
             yield features
 
 
@@ -204,36 +203,23 @@ if __name__ == '__main__':
         candidates = dev_set[qid]
         true_size = len(candidates)
         size = len(candidates)
+
         padding = (BATCH_SIZE - (size % BATCH_SIZE)) % BATCH_SIZE
         candidates += [''] * padding
         size += padding
-        try:
-            assert len(candidates) % BATCH_SIZE == 0
-        except:
-            print(padding)
-            print(len(dev_set[qid]))
-            print(size)
-            import pdb
-            pdb.set_trace()
+
+        assert len(candidates) % BATCH_SIZE == 0
         input_q.put((query, candidates))
         results = [output_q.get() for _ in range(size)][:true_size]
         log_probs = list(zip(*results))
-        try:
-            assert len(log_probs[0]) == size - padding
-            assert len(log_probs[0]) == len(log_probs[1])
-        except:
-            import pdb
-            pdb.set_trace()
+
+        assert len(log_probs[0]) == size - padding
+        assert len(log_probs[0]) == len(log_probs[1])
         log_probs = np.stack(log_probs).reshape(-1, 2)
 
         scores = log_probs[:, 1]
         pred_docs = scores.argsort()[::-1]
-
-        try:
-            relevant = np.array(dev_labels[qid]) * np.array(scores) * np.arange(1, len(scores)+1)
-        except:
-            import pdb
-            pdb.set_trace()
+        relevant = np.array(dev_labels[qid]) * np.array(scores) * np.arange(1, len(scores)+1)
         total_mrr += sum(relevant) / size
         print('Avg MRR: %s' % (total_mrr / (i+1)))
 
