@@ -242,8 +242,7 @@ def rank(query, candidates):
 
         return output_spec
 
-    estimator = tf.contrib.tpu.TPUEstimator(
-        use_tpu=False,
+    estimator = tf.estimator.Estimator(
         model_fn=model_fn,
         config=run_config,
         predict_batch_size=batch_size)
