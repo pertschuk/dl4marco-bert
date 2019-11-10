@@ -91,9 +91,9 @@ def rank(query, candidates):
     batch_size = 16
     def input_fn():
         output_types = {
-                "input_ids": tf.int32,
-                "segment_ids": tf.int32,
-                "input_mask": tf.int32,
+                "input_ids": tf.Tensor,
+                "segment_ids": tf.Tensor,
+                "input_mask": tf.Tensor,
             }
         dataset = tf.data.Dataset.from_generator(feature_generator, output_types)
         dataset = dataset.padded_batch(
@@ -131,7 +131,6 @@ def rank(query, candidates):
 
         tvars = tf.trainable_variables()
 
-        scaffold_fn = None
         initialized_variable_names = []
         if init_checkpoint:
             (assignment_map, initialized_variable_names
