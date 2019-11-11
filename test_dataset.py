@@ -37,7 +37,7 @@ def add_to_q(dataset_path):
 def main():
     MAX_SEQ_LENGTH = 512
     BATCH_SIZE = 1
-    dataset_path = 'dataset_dev.tf'
+    dataset_path = 'balls.tf'
     slice_dataset = input_fn_builder(dataset_path,MAX_SEQ_LENGTH,False,
                                      max_eval_examples=MAX_EVAL_EXAMPLES)
     og_dataset = slice_dataset(params={"batch_size": BATCH_SIZE})
