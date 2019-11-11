@@ -23,6 +23,8 @@ import optimization
 
 flags = tf.flags
 
+SEQ_LENGTH = 512
+
 FLAGS = flags.FLAGS
 
 output_q = Queue()
@@ -215,45 +217,39 @@ def model_fn_builder(bert_config, num_labels, init_checkpoint, learning_rate,
   return model_fn
 
 
-def input_fn_builder(dataset_path, seq_length, is_training,
-                     max_eval_examples=None):
-  """Creates an `input_fn` closure to be passed to TPUEstimator."""
+def input_fn(params):
+  """The actual input function."""
 
-  def input_fn(params):
-    """The actual input function."""
+  batch_size = params["batch_size"]
 
-    batch_size = params["batch_size"]
+  output_types = {
+      "input_ids": tf.int32,
+      "segment_ids": tf.int32,
+      "input_mask": tf.int32,
+      "label_ids": tf.int32,
+  }
+  dataset = tf.data.Dataset.from_generator(feature_generator, output_types)
 
-    output_types = {
-        "input_ids": tf.int32,
-        "segment_ids": tf.int32,
-        "input_mask": tf.int32,
-        "label_ids": tf.int32,
-    }
-    dataset = tf.data.Dataset.from_generator(feature_generator, output_types)
+  dataset = dataset.padded_batch(
+      batch_size=batch_size,
+      padded_shapes={
+          "input_ids": [SEQ_LENGTH],
+          "segment_ids": [SEQ_LENGTH],
+          "input_mask": [SEQ_LENGTH],
+          "label_ids": [],
+      },
+      padding_values={
+          "input_ids": 0,
+          "segment_ids": 0,
+          "input_mask": 0,
+          "label_ids": 0,
+      },
+      drop_remainder=True)
 
-    dataset = dataset.padded_batch(
-        batch_size=batch_size,
-        padded_shapes={
-            "input_ids": [seq_length],
-            "segment_ids": [seq_length],
-            "input_mask": [seq_length],
-            "label_ids": [],
-        },
-        padding_values={
-            "input_ids": 0,
-            "segment_ids": 0,
-            "input_mask": 0,
-            "label_ids": 0,
-        },
-        drop_remainder=True)
-
-    return dataset
-  return input_fn
+  return dataset
 
 
 def main(_):
-  tf.logging.set_verbosity(tf.logging.INFO)
 
   if not FLAGS.do_train and not FLAGS.do_eval:
     raise ValueError("At least one of `do_train` or `do_eval` must be True.")
@@ -304,40 +300,27 @@ def main(_):
       eval_batch_size=FLAGS.eval_batch_size,
       predict_batch_size=FLAGS.eval_batch_size)
 
-  if FLAGS.do_eval:
-    for set_name in ["dev", "eval"]:
-      tf.logging.info("***** Running evaluation *****")
-      tf.logging.info("  Batch size = %d", FLAGS.eval_batch_size)
-      max_eval_examples = None
-      if FLAGS.max_eval_examples:
-        max_eval_examples = FLAGS.max_eval_examples * FLAGS.num_eval_docs
+  result = estimator.predict(input_fn=input_fn,
+                             yield_single_examples=True)
+  start_time = time.time()
+  examples = 0
+  results = []
+  for item in result:
+    results.append((item["log_probs"], item["label_ids"]))
 
-      eval_input_fn = input_fn_builder(
-          dataset_path=FLAGS.data_dir + "/dataset_" + set_name + ".tf",
-          seq_length=FLAGS.max_seq_length,
-          is_training=False,
-          max_eval_examples=max_eval_examples)
+    if len(results) == FLAGS.num_eval_docs:
 
-      result = estimator.predict(input_fn=eval_input_fn,
-                                 yield_single_examples=True)
-      start_time = time.time()
-      examples = 0
+      log_probs, labels = zip(*results)
+      log_probs = np.stack(log_probs).reshape(-1, 2)
+
+      scores = log_probs[:, 1]
+      pred_docs = scores.argsort()[::-1]
+
+      for doc_idx in pred_docs:
+        output_q.put(doc_idx)
+      examples += 1
       results = []
-      for item in result:
-        results.append((item["log_probs"], item["label_ids"]))
-
-        if len(results) == FLAGS.num_eval_docs:
-
-          log_probs, labels = zip(*results)
-          log_probs = np.stack(log_probs).reshape(-1, 2)
-
-          scores = log_probs[:, 1]
-          pred_docs = scores.argsort()[::-1]
-
-          for doc_idx in pred_docs:
-            output_q.put(doc_idx)
-          examples += 1
-          print("took %s seconds" % ((time.time() - start_time)/ examples))
+      print("took %s seconds" % ((time.time() - start_time)/ examples))
 
 
 def pad_docs(docs, eval_size):
@@ -381,5 +364,3 @@ if __name__ == "__main__":
   t = Thread(target=output_fn)
   t.start()
   tf.app.run()
-
-
