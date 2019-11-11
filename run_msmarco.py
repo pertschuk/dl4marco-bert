@@ -14,7 +14,7 @@ bert_config_file = 'bert_marco/bert_config.json'
 init_ckpt = 'bert_marco/bert_model.ckpt'
 model_dir = 'bert_marco/'
 
-batch_size = 4
+batch_size = 8
 num_eval_docs = 1000
 MAX_SEQ_LENGTH = 128
 VOCAB_FILE = 'bert_marco/vocab.txt'
