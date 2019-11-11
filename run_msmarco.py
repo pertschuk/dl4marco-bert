@@ -117,9 +117,6 @@ flags.DEFINE_integer(
     "Only used if `use_tpu` is True. Total number of TPU cores to use.")
 
 
-METRICS_MAP = ['MAP', 'RPrec', 'MRR', 'NDCG', 'MRR@10']
-
-
 def create_model(bert_config, is_training, input_ids, input_mask, segment_ids,
                  labels, num_labels, use_one_hot_embeddings):
   """Creates a classification model."""
@@ -166,10 +163,6 @@ def model_fn_builder(bert_config, num_labels, init_checkpoint, learning_rate,
   def model_fn(features, labels, mode, params):  # pylint: disable=unused-argument
     """The `model_fn` for TPUEstimator."""
 
-    tf.logging.info("*** Features ***")
-    for name in sorted(features.keys()):
-      tf.logging.info("  name = %s, shape = %s" % (name, features[name].shape))
-
     input_ids = features["input_ids"]
     input_mask = features["input_mask"]
     segment_ids = features["segment_ids"]
@@ -183,27 +176,17 @@ def model_fn_builder(bert_config, num_labels, init_checkpoint, learning_rate,
     tvars = tf.trainable_variables()
 
     scaffold_fn = None
-    initialized_variable_names = []
-    if init_checkpoint:
-      (assignment_map, initialized_variable_names
-      ) = modeling.get_assignment_map_from_checkpoint(tvars, init_checkpoint)
-      if use_tpu:
+    (assignment_map, initialized_variable_names
+    ) = modeling.get_assignment_map_from_checkpoint(tvars, init_checkpoint)
+    if use_tpu:
 
-        def tpu_scaffold():
-          tf.train.init_from_checkpoint(init_checkpoint, assignment_map)
-          return tf.train.Scaffold()
-
-        scaffold_fn = tpu_scaffold
-      else:
+      def tpu_scaffold():
         tf.train.init_from_checkpoint(init_checkpoint, assignment_map)
+        return tf.train.Scaffold()
 
-    tf.logging.info("**** Trainable Variables ****")
-    for var in tvars:
-      init_string = ""
-      if var.name in initialized_variable_names:
-        init_string = ", *INIT_FROM_CKPT*"
-      tf.logging.info("  name = %s, shape = %s%s", var.name, var.shape,
-                      init_string)
+      scaffold_fn = tpu_scaffold
+    else:
+      tf.train.init_from_checkpoint(init_checkpoint, assignment_map)
 
     output_spec = tf.contrib.tpu.TPUEstimatorSpec(
       mode=mode,
@@ -251,18 +234,8 @@ def input_fn(params):
 
 def main(_):
 
-  if not FLAGS.do_train and not FLAGS.do_eval:
-    raise ValueError("At least one of `do_train` or `do_eval` must be True.")
-
   bert_config = modeling.BertConfig.from_json_file(FLAGS.bert_config_file)
-
-  if FLAGS.max_seq_length > bert_config.max_position_embeddings:
-    raise ValueError(
-        "Cannot use sequence length %d because the BERT model "
-        "was only trained up to sequence length %d" %
-        (FLAGS.max_seq_length, bert_config.max_position_embeddings))
-
-  tf.gfile.MakeDirs(FLAGS.output_dir)
+  assert SEQ_LENGTH <= bert_config.max_position_embeddings
 
   tpu_cluster_resolver = None
   if FLAGS.use_tpu and FLAGS.tpu_name:
@@ -359,6 +332,7 @@ def output_fn():
                 qid_count[qid] = max(qid_count[qid], (1.0 / (float(rank+1))))
                 mrr = sum(qid_count.values()) / len(qid_count.keys())
                 print("MRR: %s " % mrr)
+
 
 if __name__ == "__main__":
   t = Thread(target=output_fn)
