@@ -1,7 +1,6 @@
-from .run_msmarco import input_fn_builder
+from run_msmarco import input_fn_builder
 import tensorflow as tf
-from .server import feature_generator, input_q
-import csv
+from server import feature_generator, input_q
 import collections
 
 
