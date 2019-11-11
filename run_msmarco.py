@@ -203,31 +203,13 @@ def model_fn_builder(bert_config, num_labels, init_checkpoint, learning_rate,
       tf.logging.info("  name = %s, shape = %s%s", var.name, var.shape,
                       init_string)
 
-    output_spec = None
-    if mode == tf.estimator.ModeKeys.TRAIN:
-
-      train_op = optimization.create_optimizer(
-          total_loss, learning_rate, num_train_steps, num_warmup_steps, use_tpu)
-
-      output_spec = tf.contrib.tpu.TPUEstimatorSpec(
-          mode=mode,
-          loss=total_loss,
-          train_op=train_op,
-          scaffold_fn=scaffold_fn)
-
-    elif mode == tf.estimator.ModeKeys.PREDICT:
-      output_spec = tf.contrib.tpu.TPUEstimatorSpec(
-          mode=mode,
-          predictions={
-              "log_probs": log_probs,
-              "label_ids": label_ids,
-          },
-          scaffold_fn=scaffold_fn)
-
-    else:
-      raise ValueError(
-          "Only TRAIN and PREDICT modes are supported: %s" % (mode))
-
+    output_spec = tf.contrib.tpu.TPUEstimatorSpec(
+      mode=mode,
+      predictions={
+        "log_probs": log_probs,
+        "label_ids": label_ids,
+      },
+      scaffold_fn=scaffold_fn)
     return output_spec
 
   return model_fn
@@ -241,37 +223,6 @@ def input_fn_builder(dataset_path, seq_length, is_training,
     """The actual input function."""
 
     batch_size = params["batch_size"]
-    output_buffer_size = batch_size * 1000
-
-    def extract_fn(data_record):
-      features = {
-          "query_ids": tf.FixedLenSequenceFeature(
-              [], tf.int64, allow_missing=True),
-          "doc_ids": tf.FixedLenSequenceFeature(
-              [], tf.int64, allow_missing=True),
-          "label": tf.FixedLenFeature([], tf.int64),
-      }
-
-      sample = tf.parse_single_example(data_record, features)
-
-      query_ids = tf.cast(sample["query_ids"], tf.int32)
-      doc_ids = tf.cast(sample["doc_ids"], tf.int32)
-      label_ids = tf.cast(sample["label"], tf.int32)
-      input_ids = tf.concat((query_ids, doc_ids), 0)
-
-      query_segment_id = tf.zeros_like(query_ids)
-      doc_segment_id = tf.ones_like(doc_ids)
-      segment_ids = tf.concat((query_segment_id, doc_segment_id), 0)
-
-      input_mask = tf.ones_like(input_ids)
-
-      features = {
-          "input_ids": input_ids,
-          "segment_ids": segment_ids,
-          "input_mask": input_mask,
-          "label_ids": label_ids,
-      }
-      return features
 
     output_types = {
         "input_ids": tf.int32,
@@ -362,18 +313,6 @@ def main(_):
       eval_batch_size=FLAGS.eval_batch_size,
       predict_batch_size=FLAGS.eval_batch_size)
 
-  if FLAGS.do_train:
-    tf.logging.info("***** Running training *****")
-    tf.logging.info("  Batch size = %d", FLAGS.train_batch_size)
-    tf.logging.info("  Num steps = %d", FLAGS.num_train_steps)
-    train_input_fn = input_fn_builder(
-        dataset_path=FLAGS.data_dir + "/dataset_train.tf",
-        seq_length=FLAGS.max_seq_length,
-        is_training=True)
-    estimator.train(input_fn=train_input_fn,
-                    max_steps=FLAGS.num_train_steps)
-    tf.logging.info("Done Training!")
-
   if FLAGS.do_eval:
     for set_name in ["dev", "eval"]:
       tf.logging.info("***** Running evaluation *****")
@@ -434,12 +373,6 @@ def main(_):
             rank = 1
             for doc_idx in pred_docs:
               output_q.put(doc_idx)
-              # Skip fake docs, as they are only used to ensure that each query
-              # has 1000 docs.
-              # if doc_id != "00000000":
-              #   msmarco_file.write(
-              #       "\t".join((query_id, doc_id, str(rank))) + "\n")
-              #       rank += 1
 
           example_idx += 1
           results = []
@@ -492,7 +425,6 @@ def output_fn():
                 print("MRR: %s " % mrr)
 
 if __name__ == "__main__":
-
   t = Thread(target=output_fn)
   t.start()
   tf.app.run()
