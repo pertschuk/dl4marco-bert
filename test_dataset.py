@@ -66,9 +66,9 @@ def main():
         print(og_features)
         print(new_features)
 
-        assert np.equal(og_features['input_ids'], new_features['input_ids'])
-        assert np.equal(og_features['segment_ids'], new_features['segment_ids'])
-        assert np.equal(og_features['input_mask'], new_features['input_mask'])
+        assert np.equal(og_features['input_ids'].all(), new_features['input_ids'].all())
+        assert np.equal(og_features['segment_ids'].all(), new_features['segment_ids'].all())
+        assert np.equal(og_features['input_mask'].all(), new_features['input_mask'].all())
 
 if __name__ == '__main__':
     main()
