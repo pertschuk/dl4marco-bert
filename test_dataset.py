@@ -5,7 +5,7 @@ import collections
 import tensorflow_datasets as tfds
 import numpy as np
 
-MAX_EVAL_EXAMPLES = 100000
+MAX_EVAL_EXAMPLES = 10000
 
 def add_to_q(dataset_path):
     queries_docs = collections.defaultdict(list)
