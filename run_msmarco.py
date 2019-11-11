@@ -455,8 +455,8 @@ def main(_):
       tf.logging.info(all_metrics)
 
 if __name__ == "__main__":
-
-  t = Thread(target=add_to_q, args=('data/top1000.dev'))
-  t.start()
+  # t = Thread(target=add_to_q, args=('data/top1000.dev'))
+  # t.start()
+  add_to_q('data/top1000.dev')
   tf.app.run()
 
