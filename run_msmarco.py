@@ -276,10 +276,6 @@ def input_fn_builder(dataset_path, seq_length, is_training,
     }
     dataset = tf.data.Dataset.from_generator(feature_generator, output_types)
 
-    # dataset = tf.data.TFRecordDataset([dataset_path])
-    # dataset = dataset.map(
-    #     extract_fn, num_parallel_calls=4).prefetch(output_buffer_size)
-
     if is_training:
       dataset = dataset.repeat()
       dataset = dataset.shuffle(buffer_size=1000)
