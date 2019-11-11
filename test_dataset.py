@@ -19,20 +19,6 @@ def add_to_q(dataset_path):
             doc_dict[doc_id] = doc
             queries[query_id] = query
 
-    print('done loading dataset')
-
-    # Add fake paragraphs to the queries that have less than FLAGS.num_eval_docs.
-    queries = list(queries_docs.keys())  # Need to copy keys before iterating.
-    for query in queries:
-        docs = queries_docs[query]
-        docs += max(
-            0, num_eval_docs - len(docs)) * [('00000000', 'FAKE DOCUMENT', 0)]
-        queries_docs[query] = docs
-
-    assert len(
-        set(len(docs) == num_eval_docs for docs in queries_docs.values())) == 1, (
-        'Not all queries have {} docs'.format(num_eval_docs))
-
     with open('query_doc_ids_dev.txt', 'r') as file:
         docs = []
         for i, line in enumerate(file):
