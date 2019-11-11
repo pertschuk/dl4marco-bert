@@ -3,6 +3,8 @@
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
+from server import feature_generator, input_q
+from test_dataset import add_to_q
 
 import os
 import time
@@ -263,12 +265,30 @@ def input_fn_builder(dataset_path, seq_length, is_training,
           "input_mask": input_mask,
           "label_ids": label_ids,
       }
-      tf.logging.info(features)
       return features
 
-    dataset = tf.data.TFRecordDataset([dataset_path])
-    dataset = dataset.map(
-        extract_fn, num_parallel_calls=4).prefetch(output_buffer_size)
+    output_types = {
+        "input_ids": tf.int32,
+        "segment_ids": tf.int32,
+        "input_mask": tf.int32,
+    }
+    dataset = tf.data.Dataset.from_generator(feature_generator, output_types)
+    dataset = dataset.padded_batch(
+        batch_size=batch_size,
+        padded_shapes={
+            "input_ids": [FLAGS.max_seq_length],
+            "segment_ids": [FLAGS.max_seq_length],
+            "input_mask": [FLAGS.max_seq_length],
+        },
+        padding_values={
+            "input_ids": 0,
+            "segment_ids": 0,
+            "input_mask": 0
+        },
+        drop_remainder=True)
+    # dataset = tf.data.TFRecordDataset([dataset_path])
+    # dataset = dataset.map(
+    #     extract_fn, num_parallel_calls=4).prefetch(output_buffer_size)
 
     if is_training:
       dataset = dataset.repeat()
@@ -444,7 +464,7 @@ def main(_):
       tf.logging.info("  ".join(METRICS_MAP))
       tf.logging.info(all_metrics)
 
-
 if __name__ == "__main__":
+  add_to_q('data/top1000.dev')
   tf.app.run()
 
