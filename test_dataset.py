@@ -64,7 +64,9 @@ def main():
             tfds.as_numpy(og_dataset),tfds.as_numpy(dataset)):
         print(og_features)
         print(new_features)
-        assert og_features == new_features
+        assert og_features['input_ids'] == new_features['input_ids']
+        assert og_features['segment_ids'] == new_features['segment_ids']
+        assert og_features['input_mask'] == new_features['input_mask']
 
 if __name__ == '__main__':
     main()
