@@ -54,6 +54,7 @@ def feature_generator():
                 "input_ids": input_ids,
                 "segment_ids": segment_ids,
                 "input_mask": input_mask,
+                "label_ids": 0
             }
             yield features
 

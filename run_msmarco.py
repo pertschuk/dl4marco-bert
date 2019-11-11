@@ -271,21 +271,10 @@ def input_fn_builder(dataset_path, seq_length, is_training,
         "input_ids": tf.int32,
         "segment_ids": tf.int32,
         "input_mask": tf.int32,
+        "label_ids": tf.int32,
     }
     dataset = tf.data.Dataset.from_generator(feature_generator, output_types)
-    dataset = dataset.padded_batch(
-        batch_size=batch_size,
-        padded_shapes={
-            "input_ids": [FLAGS.max_seq_length],
-            "segment_ids": [FLAGS.max_seq_length],
-            "input_mask": [FLAGS.max_seq_length],
-        },
-        padding_values={
-            "input_ids": 0,
-            "segment_ids": 0,
-            "input_mask": 0
-        },
-        drop_remainder=True)
+
     # dataset = tf.data.TFRecordDataset([dataset_path])
     # dataset = dataset.map(
     #     extract_fn, num_parallel_calls=4).prefetch(output_buffer_size)
