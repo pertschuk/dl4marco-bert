@@ -22,11 +22,10 @@ def main():
         last_qid = 0
         for qid, doc_id, rank in data:
             if (qid, doc_id) in qrels:
-                print(rank)
                 qid_count[qid] = max(qid_count[qid], (1 / int(rank)))
             if qid != last_qid:
-                mrr += qid_count[qid]
-                total += 1
+                mrr = sum(qid_count.values())
+                total = len(qid_count.keys())
                 print("MRR: %s " % (mrr / total))
             last_qid = qid
 
