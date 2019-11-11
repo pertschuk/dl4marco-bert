@@ -25,39 +25,6 @@ tokenizer = tokenization.FullTokenizer(
 run_config = tf.estimator.RunConfig()
 
 
-def feature_generator():
-    while True:
-        query, candidates = input_q.get()
-        query = tokenization.convert_to_unicode(query)
-        query_token_ids = tokenization.convert_to_bert_input(
-            text=query, max_seq_length=MAX_SEQ_LENGTH, tokenizer=tokenizer,
-            add_cls=True)
-
-        for i, doc_text in enumerate(candidates):
-            doc_token_id = tokenization.convert_to_bert_input(
-                text=tokenization.convert_to_unicode(doc_text),
-                max_seq_length=MAX_SEQ_LENGTH - len(query_token_ids),
-                tokenizer=tokenizer,
-                add_cls=False)
-
-            query_ids = query_token_ids
-            doc_ids = doc_token_id
-            input_ids = query_ids + doc_ids
-
-            query_segment_id = [0] * len(query_ids)
-            doc_segment_id = [1] * len(doc_ids)
-            segment_ids = query_segment_id + doc_segment_id
-
-            input_mask = [1] * len(input_ids)
-
-            features = {
-                "input_ids": input_ids,
-                "segment_ids": segment_ids,
-                "input_mask": input_mask,
-                "label_ids": 0
-            }
-            yield features
-
 
 def create_model(bert_config, is_training, input_ids, input_mask, segment_ids,
                  num_labels, use_one_hot_embeddings):
