@@ -435,12 +435,13 @@ def main(_):
             for doc_idx in pred_docs:
               doc_id = doc_ids[doc_idx]
               output_q.put((query_id, doc_id, rank))
+              rank += 1
               # Skip fake docs, as they are only used to ensure that each query
               # has 1000 docs.
               # if doc_id != "00000000":
               #   msmarco_file.write(
               #       "\t".join((query_id, doc_id, str(rank))) + "\n")
-              #   rank += 1
+              #       rank += 1
 
           example_idx += 1
           results = []
