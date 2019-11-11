@@ -433,9 +433,7 @@ def main(_):
             query_id = query_ids[0]
             rank = 1
             for doc_idx in pred_docs:
-              doc_id = doc_ids[doc_idx]
-              output_q.put((query_id, doc_id, rank))
-              rank += 1
+              output_q.put(doc_idx)
               # Skip fake docs, as they are only used to ensure that each query
               # has 1000 docs.
               # if doc_id != "00000000":
@@ -457,8 +455,13 @@ def main(_):
       tf.logging.info("  ".join(METRICS_MAP))
       tf.logging.info(all_metrics)
 
+def pad_docs(docs, eval_size):
+    if len(docs) < eval_size:
+        return docs + [(0, 'FAKE DOC')] * (eval_size - len(docs))
+    return docs
 
 def output_fn():
+    eval_size = 1000
     qrels = set()
     with open(os.path.join('data', 'qrels.dev.small.tsv')) as fh:
         data = csv.reader(fh, delimiter='\t')
@@ -466,18 +469,30 @@ def output_fn():
             qrels.add((qid, doc_id))
     i = 0
     qid_count = collections.defaultdict(int)
-    while True:
-        qid, doc_id, rank = output_q.get()
-        i += 1
-        if (qid, doc_id) in qrels:
-            print(qid, ' ', rank)
-            qid_count[qid] = max(qid_count[qid], (1.0 / (float(rank))))
-            mrr = sum(qid_count.values()) / len(qid_count.keys())
-            print("MRR: %s " % mrr)
+    query_dict = dict()
+    docs_dict = collections.defaultdict(list)
+    with open('data/top1000.dev', 'r') as f:
+        for i, line in enumerate(f):
+            query_id, doc_id, query, doc = line.strip().split('\t')
+            docs_dict[query_id].append((doc_id, doc))
+            query_dict[query_id] = query
+
+    for qid, query in query_dict.items():
+        docs = pad_docs(docs_dict[qid], eval_size)
+        doc_ids, doc_texts = zip(*docs)
+        input_q.put((query, doc_texts))
+
+        for rank in range(eval_size):
+            doc_idx = output_q.get()
+            doc_id = doc_ids[doc_idx]
+            if (qid, doc_id) in qrels:
+                print(qid, ' ', rank)
+                qid_count[qid] = max(qid_count[qid], (1.0 / (float(rank+1))))
+                mrr = sum(qid_count.values()) / len(qid_count.keys())
+                print("MRR: %s " % mrr)
 
 if __name__ == "__main__":
 
-  add_to_q('data/top1000.dev')
   t = Thread(target=output_fn)
   t.start()
   tf.app.run()
