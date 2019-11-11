@@ -19,15 +19,12 @@ def main():
 
     with open(os.path.join(DATA_PATH, 'output', 'msmarco_predictions_dev.tsv')) as fh:
         data = csv.reader(fh, delimiter='\t')
-        last_qid = 0
         for qid, doc_id, rank in data:
             if (qid, doc_id) in qrels:
                 qid_count[qid] = max(qid_count[qid], (1 / int(rank)))
-            if qid != last_qid:
-                mrr = sum(qid_count.values())
-                total = len(qid_count.keys())
-                print("MRR: %s " % (mrr / total))
-            last_qid = qid
+            if qid % 1000 == 0:
+                mrr = sum(qid_count.values()) / len(qid_count.keys())
+                print("MRR: %s " % mrr)
 
 if __name__== '__main__':
     main()
