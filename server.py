@@ -221,6 +221,6 @@ if __name__ == '__main__':
         scores = log_probs[:, 1]
         pred_docs = scores.argsort()[::-1]
         relevant = np.array(dev_labels[qid])[pred_docs] * np.reciprocal(np.arange(1, true_size + 1, dtype=float))
-        total_mrr += sum(relevant) / size
+        total_mrr += sum(relevant)
         print('Avg MRR: %s' % (total_mrr / (i+1)), 'Avg time %s' % ((time.time() - start)/(i+1)))
 
