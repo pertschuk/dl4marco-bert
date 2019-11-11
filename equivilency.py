@@ -23,7 +23,7 @@ def main():
             if (qid, doc_id) in qrels:
                 print(qid, ' ', rank)
                 qid_count[qid] = max(qid_count[qid], (1 / int(rank)))
-            if qid % 1000 == 0:
+            if int(qid) % 1000 == 0:
                 mrr = sum(qid_count.values()) / len(qid_count.keys())
                 print("MRR: %s " % mrr)
 
