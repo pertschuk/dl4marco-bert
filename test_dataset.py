@@ -31,7 +31,11 @@ def add_to_q(dataset_path):
             if (i+1) % 1000 == 0:
                 input_q.put((query, docs))
                 docs = []
-                assert len(queries_list) == 0
+                try:
+                    assert len(queries_list) == 0
+                except:
+                    import pdb
+                    pdb.set_trace()
                 queries_list = set()
                 print(i)
             if i > MAX_EVAL_EXAMPLES:
