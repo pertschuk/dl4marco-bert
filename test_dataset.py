@@ -4,6 +4,7 @@ from server import feature_generator, input_q
 import collections
 import tensorflow_datasets as tfds
 
+MAX_EVAL_EXAMPLES = 10000
 
 def add_to_q(dataset_path):
     queries_docs = collections.defaultdict(list)
@@ -14,6 +15,7 @@ def add_to_q(dataset_path):
             query_id, doc_id, query, doc = line.strip().split('\t')
             queries_docs[query].append((doc_id, doc))
             query_ids[query] = query_id
+            if i > MAX_EVAL_EXAMPLES: break
 
     # Add fake paragraphs to the queries that have less than FLAGS.num_eval_docs.
     queries = list(queries_docs.keys())  # Need to copy keys before iterating.
@@ -35,7 +37,8 @@ def main():
     MAX_SEQ_LENGTH = 512
     BATCH_SIZE = 1
     dataset_path = 'dataset_train.tf'
-    slice_dataset = input_fn_builder(dataset_path,MAX_SEQ_LENGTH,False)
+    slice_dataset = input_fn_builder(dataset_path,MAX_SEQ_LENGTH,False,
+                                     max_eval_examples=MAX_EVAL_EXAMPLES)
     og_dataset = slice_dataset(params={"batch_size": BATCH_SIZE})
     output_types = {
         "input_ids": tf.int32,
