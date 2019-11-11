@@ -8,7 +8,6 @@ import tensorflow_datasets as tfds
 def add_to_q(dataset_path):
     queries_docs = collections.defaultdict(list)
     query_ids = {}
-    set_name = 'dev'
     num_eval_docs = 1000
     with open(dataset_path, 'r') as f:
         for i, line in enumerate(f):
