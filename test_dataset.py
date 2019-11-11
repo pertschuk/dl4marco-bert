@@ -63,6 +63,7 @@ def main():
         drop_remainder=True)
     add_to_q('data/top1000.dev')
     print(og_dataset)
+    print(dataset)
     for og_features, new_features in zip(
             tfds.as_numpy(og_dataset),tfds.as_numpy(dataset)):
         assert np.equal(og_features['input_ids'].all(), new_features['input_ids'].all())
