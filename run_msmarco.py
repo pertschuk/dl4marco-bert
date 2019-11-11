@@ -16,7 +16,7 @@ model_dir = 'bert_marco/'
 
 batch_size = 4
 num_eval_docs = 1000
-MAX_SEQ_LENGTH = 512
+MAX_SEQ_LENGTH = 128
 VOCAB_FILE = 'bert_marco/vocab.txt'
 
 output_q = Queue()
