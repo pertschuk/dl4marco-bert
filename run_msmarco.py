@@ -318,71 +318,33 @@ def main(_):
           is_training=False,
           max_eval_examples=max_eval_examples)
 
-      tf.logging.info("Computing metrics...")
-
-      if FLAGS.msmarco_output:
-        msmarco_file = tf.gfile.Open(
-            FLAGS.output_dir + "/msmarco_predictions_" + set_name + ".tsv", "w")
-        query_docids_map = []
-        with tf.gfile.Open(
-            FLAGS.data_dir + "/query_doc_ids_" + set_name + ".txt") as ref_file:
-          for line in ref_file:
-            query_docids_map.append(line.strip().split("\t"))
-
       result = estimator.predict(input_fn=eval_input_fn,
                                  yield_single_examples=True)
       start_time = time.time()
+      examples = 0
       results = []
-      all_metrics = np.zeros(len(METRICS_MAP))
-      example_idx = 0
-      total_count = 0
       for item in result:
         results.append((item["log_probs"], item["label_ids"]))
-        if total_count % 10000 == 0:
-          tf.logging.info("Read {} examples in {} secs".format(
-              total_count, int(time.time() - start_time)))
 
         if len(results) == FLAGS.num_eval_docs:
 
           log_probs, labels = zip(*results)
           log_probs = np.stack(log_probs).reshape(-1, 2)
-          labels = np.stack(labels)
 
           scores = log_probs[:, 1]
           pred_docs = scores.argsort()[::-1]
-          gt = set(list(np.where(labels > 0)[0]))
 
-          all_metrics += metrics.metrics(
-              gt=gt, pred=pred_docs, metrics_map=METRICS_MAP)
+          for doc_idx in pred_docs:
+            output_q.put(doc_idx)
+          examples += 1
+          print("took %s seconds" % ((time.time() - start_time)/ examples))
 
-          if FLAGS.msmarco_output:
-            start_idx = example_idx * FLAGS.num_eval_docs
-            end_idx = (example_idx + 1) * FLAGS.num_eval_docs
-            query_ids, doc_ids = zip(*query_docids_map[start_idx:end_idx])
-            assert len(set(query_ids)) == 1, "Query ids must be all the same."
-            query_id = query_ids[0]
-            rank = 1
-            for doc_idx in pred_docs:
-              output_q.put(doc_idx)
-
-          example_idx += 1
-          results = []
-
-        total_count += 1
-
-      if FLAGS.msmarco_output:
-        msmarco_file.close()
-
-      all_metrics /= example_idx
-
-      tf.logging.info("Eval {}:".format(set_name))
-      tf.logging.info("  ".join(METRICS_MAP))
-      tf.logging.info(all_metrics)
 
 def pad_docs(docs, eval_size):
     if len(docs) < eval_size:
         return docs + [(0, 'FAKE DOC')] * (eval_size - len(docs))
     return docs
+
 
 def output_fn():
     eval_size = 1000
