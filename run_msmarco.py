@@ -145,8 +145,7 @@ def main(_):
 
   estimator = tf.estimator.Estimator(
       model_fn=model_fn,
-      config=run_config,
-      batch_size=batch_size)
+      config=run_config)
 
   result = estimator.predict(input_fn=input_fn,
                              yield_single_examples=True)
