@@ -183,7 +183,7 @@ if __name__ == '__main__':
     dev_queries = dict()
     dev_labels = defaultdict(list)
 
-    with open(data_dir + 'top1000.eval') as fn:
+    with open(data_dir + 'top1000.dev') as fn:
         reader = csv.reader(fn, delimiter='\t')
         i = 0
         for qid, cid, query, passage in reader:
