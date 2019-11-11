@@ -17,7 +17,7 @@ def main():
             qrels.add((qid, doc_id))
             qid_count[qid] += 1
 
-    with open(os.path.join(DATA_PATH, 'output', 'msmarco_predictions_dev.tsv ')) as fh:
+    with open(os.path.join(DATA_PATH, 'output', 'msmarco_predictions_dev.tsv')) as fh:
         data = csv.reader(fh, delimiter='\t')
         last_qid = 0
         for qid, doc_id, rank in data:
