@@ -16,7 +16,8 @@ def add_to_q(dataset_path):
             query_id, doc_id, query, doc = line.strip().split('\t')
             queries_docs[query_id].append((doc_id, doc))
             query_ids[query_id] = query
-            if i > MAX_EVAL_EXAMPLES: break
+
+    print('done loading dataset')
 
     # Add fake paragraphs to the queries that have less than FLAGS.num_eval_docs.
     queries = list(queries_docs.keys())  # Need to copy keys before iterating.
@@ -36,6 +37,10 @@ def add_to_q(dataset_path):
             query = query_ids[query_id]
             doc_ids, docs = zip(*queries_docs[query_id])
             input_q.put((query, docs))
+            if i % 1000 == 0:
+                print(i)
+            if i > MAX_EVAL_EXAMPLES:
+                break
 
 def main():
     MAX_SEQ_LENGTH = 512
