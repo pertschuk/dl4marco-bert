@@ -37,7 +37,7 @@ def add_to_q(dataset_path):
 def main():
     MAX_SEQ_LENGTH = 512
     BATCH_SIZE = 1
-    dataset_path = 'balls.tf'
+    dataset_path = 'dataset_dev.tf'
     slice_dataset = input_fn_builder(dataset_path,MAX_SEQ_LENGTH,False,
                                      max_eval_examples=MAX_EVAL_EXAMPLES)
     og_dataset = slice_dataset(params={"batch_size": BATCH_SIZE})
@@ -62,6 +62,7 @@ def main():
         },
         drop_remainder=True)
     add_to_q('data/top1000.dev')
+    print(og_dataset)
     for og_features, new_features in zip(
             tfds.as_numpy(og_dataset),tfds.as_numpy(dataset)):
         assert np.equal(og_features['input_ids'].all(), new_features['input_ids'].all())
