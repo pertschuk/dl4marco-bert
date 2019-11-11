@@ -34,7 +34,7 @@ def add_to_q(dataset_path):
         for i, line in enumerate(file):
             query_id, doc_id = line.strip().split('\t')
             query = query_ids[query_id]
-            doc_ids, docs = zip(queries_docs[queries_docs[query_id]])
+            doc_ids, docs = zip(queries_docs[query_id])
             input_q.put((query, docs))
 
 def main():
