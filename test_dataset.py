@@ -35,7 +35,7 @@ def add_to_q(dataset_path):
         input_q.put((query, docs))
 
 def main():
-    MAX_SEQ_LENGTH = 256
+    MAX_SEQ_LENGTH = 512
     BATCH_SIZE = 1
     dataset_path = 'dataset_train.tf'
     slice_dataset = input_fn_builder(dataset_path,MAX_SEQ_LENGTH,False,
