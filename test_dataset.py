@@ -29,7 +29,7 @@ def add_to_q(dataset_path):
 
     for i, (query, doc_ids_docs) in enumerate(queries_docs.items()):
         doc_ids, docs = zip(*doc_ids_docs)
-        input_q.add(query, docs)
+        input_q.put((query, docs))
 
 def main():
     MAX_SEQ_LENGTH = 512
