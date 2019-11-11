@@ -2,6 +2,7 @@ from run_msmarco import input_fn_builder
 import tensorflow as tf
 from server import feature_generator, input_q
 import collections
+import tensorflow_datasets as tfds
 
 
 def add_to_q(dataset_path):
@@ -57,8 +58,8 @@ def main():
         },
         drop_remainder=True)
     add_to_q('data/top1000.dev')
-    for og_features, new_features in zip(og_dataset.make_one_shot_iterator(),
-                                         dataset.make_one_shot_iterator()):
+    for og_features, new_features in zip(
+            tfds.as_numpy(og_dataset),tfds.as_numpy(dataset)):
         print(og_features)
         print(new_features)
         assert og_features == new_features
