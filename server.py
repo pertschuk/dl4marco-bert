@@ -136,7 +136,7 @@ def rank():
         tvars = tf.trainable_variables()
 
         initialized_variable_names = []
-        tf.logging.error('TRYING TO LOAD FROM INIT CHECKPOINT %s' % init_checkpoint)
+        print('****TRYING TO LOAD FROM INIT CHECKPOINT %s****' % init_checkpoint)
         if init_checkpoint:
             (assignment_map, initialized_variable_names
              ) = modeling.get_assignment_map_from_checkpoint(tvars, init_checkpoint)
@@ -147,7 +147,7 @@ def rank():
             init_string = ""
             if var.name in initialized_variable_names:
                 init_string = ", *INIT_FROM_CKPT*"
-            tf.logging.info("  name = %s, shape = %s%s", var.name, var.shape,
+            tf.logging.info(" name = %s, shape = %s%s", var.name, var.shape,
                             init_string)
 
         output_spec = tf.estimator.EstimatorSpec(
