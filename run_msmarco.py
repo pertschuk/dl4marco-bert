@@ -6,6 +6,9 @@ from __future__ import print_function
 from server import feature_generator, input_q
 from test_dataset import add_to_q
 from threading import Thread
+from queue import Queue
+import collections
+import csv
 
 import os
 import time
@@ -21,6 +24,8 @@ import optimization
 flags = tf.flags
 
 FLAGS = flags.FLAGS
+
+output_q = Queue()
 
 ## Required parameters
 flags.DEFINE_string(
@@ -429,12 +434,13 @@ def main(_):
             rank = 1
             for doc_idx in pred_docs:
               doc_id = doc_ids[doc_idx]
+              output_q.put((query_id, doc_id, rank))
               # Skip fake docs, as they are only used to ensure that each query
               # has 1000 docs.
-              if doc_id != "00000000":
-                msmarco_file.write(
-                    "\t".join((query_id, doc_id, str(rank))) + "\n")
-                rank += 1
+              # if doc_id != "00000000":
+              #   msmarco_file.write(
+              #       "\t".join((query_id, doc_id, str(rank))) + "\n")
+              #   rank += 1
 
           example_idx += 1
           results = []
@@ -450,9 +456,30 @@ def main(_):
       tf.logging.info("  ".join(METRICS_MAP))
       tf.logging.info(all_metrics)
 
+
+def output_fn():
+    qrels = set()
+    with open(os.path.join('data', 'qrels.dev.small.tsv')) as fh:
+        data = csv.reader(fh, delimiter='\t')
+        for qid, _, doc_id, _ in data:
+            qrels.add((qid, doc_id))
+    i = 0
+    qid_count = collections.defaultdict(int)
+    while True:
+        qid, doc_id, rank = output_q.get()
+        i += 1
+        if (qid, doc_id) in qrels:
+            print(qid, ' ', rank)
+            qid_count[qid] = max(qid_count[qid], (1.0 / (float(rank))))
+            mrr = sum(qid_count.values()) / len(qid_count.keys())
+            print("MRR: %s " % mrr)
+
 if __name__ == "__main__":
   # t = Thread(target=add_to_q, args=('data/top1000.dev'))
   # t.start()
   add_to_q('data/top1000.dev')
+  t = Thread(target=output_fn)
+  t.start()
   tf.app.run()
+
 
