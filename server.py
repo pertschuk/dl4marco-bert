@@ -183,7 +183,7 @@ if __name__ == '__main__':
     dev_queries = dict()
     dev_labels = defaultdict(list)
 
-    with open(data_dir + 'top1000.dev') as fn:
+    with open(data_dir + 'top1000.eval') as fn:
         reader = csv.reader(fn, delimiter='\t')
         i = 0
         for qid, cid, query, passage in reader:
@@ -220,7 +220,7 @@ if __name__ == '__main__':
 
         scores = log_probs[:, 1]
         pred_docs = scores.argsort()[::-1]
-        rank = np.arange(1, true_size + 1, dtype=float) * np.array(dev_labels[qid])[pred_docs]
+        rank = sum(np.arange(1, true_size + 1, dtype=float) * np.array(dev_labels[qid])[pred_docs])
         print(rank)
         relevant = np.array(dev_labels[qid])[pred_docs] * np.reciprocal(np.arange(1, true_size + 1, dtype=float))
         total_mrr += sum(relevant)
