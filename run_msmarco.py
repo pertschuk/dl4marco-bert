@@ -5,6 +5,7 @@ from __future__ import division
 from __future__ import print_function
 from server import feature_generator, input_q
 from test_dataset import add_to_q
+from threading import Thread
 
 import os
 import time
@@ -454,6 +455,8 @@ def main(_):
       tf.logging.info(all_metrics)
 
 if __name__ == "__main__":
-  add_to_q('data/top1000.dev')
+
+  t = Thread(target=add_to_q, args=('data/top1000.dev'))
+  t.start()
   tf.app.run()
 
