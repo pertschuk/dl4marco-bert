@@ -136,6 +136,7 @@ def rank():
         tvars = tf.trainable_variables()
 
         initialized_variable_names = []
+        tf.logging.error('TRYING TO LOAD FROM INIT CHECKPOINT %s' % init_checkpoint)
         if init_checkpoint:
             (assignment_map, initialized_variable_names
              ) = modeling.get_assignment_map_from_checkpoint(tvars, init_checkpoint)
@@ -165,6 +166,7 @@ def rank():
                                yield_single_examples=True)
     total = 0
     for item in result:
+        tf.logging.info(result)
         total += 1
         output_q.put(item["log_probs"])
 
@@ -183,16 +185,16 @@ if __name__ == '__main__':
     dev_queries = dict()
     dev_labels = defaultdict(list)
 
-    with open(data_dir + 'top1000.dev') as fn:
-        reader = csv.reader(fn, delimiter='\t')
-        i = 0
-        for qid, cid, query, passage in reader:
-            dev_set[qid].append(passage)
-            dev_queries[qid] = query
-            dev_labels[qid].append(1 if (qid, cid) in qrels else 0)
-            i += 1
-            if i % 10000 == 0:
-                print(i)
+    # with open(data_dir + 'top1000.dev') as fn:
+    #     reader = csv.reader(fn, delimiter='\t')
+    #     i = 0
+    #     for qid, cid, query, passage in reader:
+    #         dev_set[qid].append(passage)
+    #         dev_queries[qid] = query
+    #         dev_labels[qid].append(1 if (qid, cid) in qrels else 0)
+    #         i += 1
+    #         if i % 10000 == 0:
+    #             print(i)
 
     # input_q.put(('test query', ['test cnadidate']*1000))
 
