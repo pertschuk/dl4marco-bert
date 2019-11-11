@@ -57,8 +57,8 @@ def main():
         },
         drop_remainder=True)
     add_to_q('data/top1000.dev')
-    for og_features, new_features in zip(og_dataset.make_one_shot_iterator().get_next(),
-                                         dataset.make_one_shot_iterator().get_next()):
+    for og_features, new_features in zip(og_dataset.make_one_shot_iterator(),
+                                         dataset.make_one_shot_iterator()):
         print(og_features)
         print(new_features)
         assert og_features == new_features
