@@ -477,7 +477,7 @@ def output_fn():
 
 if __name__ == "__main__":
 
-  t1 = Thread(target=add_to_q, args=('data/top1000.dev'))
+  t1 = Thread(target=add_to_q, args=('data/top1000.dev',))
   t1.start()
   t = Thread(target=output_fn)
   t.start()
