@@ -1,4 +1,4 @@
-# from run_msmarco import input_fn_builder
+from run_msmarco import input_fn_builder
 import tensorflow as tf
 from server import feature_generator, input_q
 import collections
@@ -14,8 +14,8 @@ def add_to_q(dataset_path):
     with open(dataset_path, 'r') as f:
         for i, line in enumerate(f):
             query_id, doc_id, query, doc = line.strip().split('\t')
-            queries_docs[query].append((doc_id, doc))
-            query_ids[query] = query_id
+            queries_docs[query_id].append((doc_id, doc))
+            query_ids[query_id] = query
             if i > MAX_EVAL_EXAMPLES: break
 
     # Add fake paragraphs to the queries that have less than FLAGS.num_eval_docs.
@@ -30,9 +30,12 @@ def add_to_q(dataset_path):
         set(len(docs) == num_eval_docs for docs in queries_docs.values())) == 1, (
         'Not all queries have {} docs'.format(num_eval_docs))
 
-    for i, (query, doc_ids_docs) in enumerate(queries_docs.items()):
-        doc_ids, docs = zip(*doc_ids_docs)
-        input_q.put((query, docs))
+    with open('query_doc_ids_dev.txt', 'r') as file:
+        for i, line in enumerate(file):
+            query_id, doc_id = line.strip().split('\t')
+            query = query_ids[query_id]
+            doc_ids, docs = zip(queries_docs[queries_docs[query_id]])
+            input_q.put((query, docs))
 
 def main():
     MAX_SEQ_LENGTH = 512
