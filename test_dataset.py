@@ -3,6 +3,7 @@ import tensorflow as tf
 from server import feature_generator, input_q
 import collections
 import tensorflow_datasets as tfds
+import numpy as np
 
 MAX_EVAL_EXAMPLES = 10000
 
@@ -34,7 +35,7 @@ def add_to_q(dataset_path):
         input_q.put((query, docs))
 
 def main():
-    MAX_SEQ_LENGTH = 512
+    MAX_SEQ_LENGTH = 128
     BATCH_SIZE = 1
     dataset_path = 'dataset_train.tf'
     slice_dataset = input_fn_builder(dataset_path,MAX_SEQ_LENGTH,False,
@@ -64,9 +65,10 @@ def main():
             tfds.as_numpy(og_dataset),tfds.as_numpy(dataset)):
         print(og_features)
         print(new_features)
-        assert og_features['input_ids'] == new_features['input_ids']
-        assert og_features['segment_ids'] == new_features['segment_ids']
-        assert og_features['input_mask'] == new_features['input_mask']
+
+        assert np.equal(og_features['input_ids'], new_features['input_ids'])
+        assert np.equal(og_features['segment_ids'], new_features['segment_ids'])
+        assert np.equal(og_features['input_mask'], new_features['input_mask'])
 
 if __name__ == '__main__':
     main()
