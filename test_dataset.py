@@ -9,13 +9,15 @@ MAX_EVAL_EXAMPLES = 10000
 
 def add_to_q(dataset_path):
     queries_docs = collections.defaultdict(list)
-    query_ids = {}
+    queries = {}
+    doc_dict = {}
     num_eval_docs = 1000
     with open(dataset_path, 'r') as f:
         for i, line in enumerate(f):
             query_id, doc_id, query, doc = line.strip().split('\t')
             queries_docs[query_id].append((doc_id, doc))
-            query_ids[query_id] = query
+            doc_dict[doc_id] = doc
+            queries[query_id] = query
 
     print('done loading dataset')
 
@@ -32,12 +34,14 @@ def add_to_q(dataset_path):
         'Not all queries have {} docs'.format(num_eval_docs))
 
     with open('query_doc_ids_dev.txt', 'r') as file:
+        docs = []
         for i, line in enumerate(file):
             query_id, doc_id = line.strip().split('\t')
-            query = query_ids[query_id]
-            doc_ids, docs = zip(*queries_docs[query_id])
-            input_q.put((query, docs))
+            query = queries[query_id]
+            docs.append(doc_dict[doc_id])
             if i % 1000 == 0:
+                input_q.put((query, docs))
+                docs = []
                 print(i)
             if i > MAX_EVAL_EXAMPLES:
                 break
