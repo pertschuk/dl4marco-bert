@@ -232,15 +232,6 @@ def input_fn_builder(dataset_path, seq_length, is_training,
     }
     dataset = tf.data.Dataset.from_generator(feature_generator, output_types)
 
-    if is_training:
-      dataset = dataset.repeat()
-      dataset = dataset.shuffle(buffer_size=1000)
-    else:
-      if max_eval_examples:
-        # Use at most this number of examples (debugging only).
-        dataset = dataset.take(max_eval_examples)
-        # pass
-
     dataset = dataset.padded_batch(
         batch_size=batch_size,
         padded_shapes={
