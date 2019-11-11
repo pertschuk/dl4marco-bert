@@ -101,8 +101,6 @@ def model_fn_builder(bert_config, num_labels, init_checkpoint):
 def input_fn(params):
   """The actual input function."""
 
-  batch_size = params["batch_size"]
-
   output_types = {
       "input_ids": tf.int32,
       "segment_ids": tf.int32,
