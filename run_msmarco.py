@@ -243,6 +243,7 @@ def input_fn_builder(dataset_path, seq_length, is_training,
               [], tf.int64, allow_missing=True),
           "label": tf.FixedLenFeature([], tf.int64),
       }
+
       sample = tf.parse_single_example(data_record, features)
 
       query_ids = tf.cast(sample["query_ids"], tf.int32)
@@ -262,6 +263,7 @@ def input_fn_builder(dataset_path, seq_length, is_training,
           "input_mask": input_mask,
           "label_ids": label_ids,
       }
+      tf.logging.info(features)
       return features
 
     dataset = tf.data.TFRecordDataset([dataset_path])
