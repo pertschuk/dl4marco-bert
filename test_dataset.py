@@ -63,9 +63,6 @@ def main():
     add_to_q('data/top1000.dev')
     for og_features, new_features in zip(
             tfds.as_numpy(og_dataset),tfds.as_numpy(dataset)):
-        print(og_features)
-        print(new_features)
-
         assert np.equal(og_features['input_ids'].all(), new_features['input_ids'].all())
         assert np.equal(og_features['segment_ids'].all(), new_features['segment_ids'].all())
         assert np.equal(og_features['input_mask'].all(), new_features['input_mask'].all())
