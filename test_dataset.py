@@ -12,6 +12,7 @@ def add_to_q(dataset_path):
     queries = {}
     doc_dict = {}
     num_eval_docs = 1000
+    doc_dict["00000000"] = 'FAKE DOC'
     with open(dataset_path, 'r') as f:
         for i, line in enumerate(f):
             query_id, doc_id, query, doc = line.strip().split('\t')
@@ -21,13 +22,17 @@ def add_to_q(dataset_path):
 
     with open('query_doc_ids_dev.txt', 'r') as file:
         docs = []
+        queries_list = set()
         for i, line in enumerate(file):
             query_id, doc_id = line.strip().split('\t')
             query = queries[query_id]
             docs.append(doc_dict[doc_id])
-            if i % 1000 == 0:
+            queries_list.add(query)
+            if (i+1) % 1000 == 0:
                 input_q.put((query, docs))
                 docs = []
+                assert len(queries_list) == 0
+                queries_list = set()
                 print(i)
             if i > MAX_EVAL_EXAMPLES:
                 break
